@@ -1,0 +1,27 @@
+# Flock Energy - Urja Meter Ops API dependencies
+#
+# Versions are lower-bound constraints (>=) chosen to ensure prebuilt wheels
+# exist for Python 3.15 (cp315), avoiding the need for a C/Rust toolchain.
+# Pin tightly in production by freezing after `pip freeze`.
+
+# Web framework
+fastapi>=0.115
+uvicorn>=0.32
+
+# HTTP client (persistent session + cookies)
+# httpx2 is the actively maintained successor to httpx (httpx's last stable
+# release was 0.28.1 in Dec 2024 and is now unmaintained). Starlette 1.6+
+# also requires httpx2 to drive its TestClient without a deprecation warning.
+httpx2>=2.16
+
+# HTML parsing (uses the stdlib html.parser; lxml intentionally omitted so no
+# native build is required)
+beautifulsoup4>=4.13
+
+# Data validation / config
+pydantic>=2.10
+pydantic-settings>=2.6
+python-dotenv>=1.0
+
+# Testing
+pytest>=8.3

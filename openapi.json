@@ -1,0 +1,690 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Flock Energy - Urja Meter Ops API",
+    "description": "A clean REST API proxy layer over the legacy Urja Meter Ops portal. Automates authentication and session management, fetches smart meter data, and normalises HTML responses into structured JSON.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Liveness probe",
+        "description": "Return service health. Does not touch the portal.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Authenticate against the Urja portal",
+        "description": "Explicitly log in to the portal using provided credentials.\n\nThe shared session is established for subsequent data requests. Auto-\nreauthentication still kicks in if the session later expires.",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Portal unreachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meters": {
+      "get": {
+        "tags": [
+          "meters"
+        ],
+        "summary": "List smart meters",
+        "description": "Retrieve the list of smart meters from the portal.",
+        "operationId": "list_meters_api_v1_meters_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Meter"
+                  },
+                  "type": "array",
+                  "title": "Response List Meters Api V1 Meters Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Portal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meters/{meter_id}": {
+      "get": {
+        "tags": [
+          "meters"
+        ],
+        "summary": "Get meter details",
+        "description": "Retrieve details for a specific meter.",
+        "operationId": "get_meter_api_v1_meters__meter_id__get",
+        "parameters": [
+          {
+            "name": "meter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Meter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Meter not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Portal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meters/{meter_id}/consumption": {
+      "get": {
+        "tags": [
+          "meters"
+        ],
+        "summary": "Get consumption history",
+        "description": "Retrieve consumption history for a specific meter.",
+        "operationId": "get_consumption_api_v1_meters__meter_id__consumption_get",
+        "parameters": [
+          {
+            "name": "meter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Meter Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsumptionHistory"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Meter not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Portal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hierarchy": {
+      "get": {
+        "tags": [
+          "hierarchy"
+        ],
+        "summary": "Get meter network hierarchy (optional extension)",
+        "description": "Retrieve the organised meter network hierarchy tree.\n\nOptional extension endpoint. If the portal does not expose hierarchy data,\na single root node with no children is returned.",
+        "operationId": "get_hierarchy_api_v1_hierarchy_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HierarchyNode"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Portal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ConsumptionHistory": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id",
+            "description": "The meter these readings belong to."
+          },
+          "readings": {
+            "items": {
+              "$ref": "#/components/schemas/ConsumptionReading"
+            },
+            "type": "array",
+            "title": "Readings",
+            "description": "Chronological consumption readings."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id"
+        ],
+        "title": "ConsumptionHistory",
+        "description": "Consumption history for a single meter."
+      },
+      "ConsumptionReading": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "When the reading was taken (ISO 8601)."
+          },
+          "kwh": {
+            "type": "number",
+            "title": "Kwh",
+            "description": "Energy consumed in kilowatt-hours."
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "Unit of the reading value.",
+            "default": "kWh"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "kwh"
+        ],
+        "title": "ConsumptionReading",
+        "description": "A single consumption measurement."
+      },
+      "ErrorDetail": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Human-readable error description."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorDetail",
+        "description": "Standard error response body."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HierarchyNode": {
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "title": "Node Id",
+            "description": "Unique node identifier."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name of the node."
+          },
+          "node_type": {
+            "type": "string",
+            "title": "Node Type",
+            "description": "Node kind, e.g. region, site, feeder, meter."
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/HierarchyNode"
+            },
+            "type": "array",
+            "title": "Children",
+            "description": "Child nodes in the hierarchy."
+          }
+        },
+        "type": "object",
+        "required": [
+          "node_id",
+          "name",
+          "node_type"
+        ],
+        "title": "HierarchyNode",
+        "description": "A node in the meter network hierarchy tree."
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Username",
+            "description": "Portal operator username."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Password",
+            "description": "Portal operator password."
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "description": "Request body for POST /api/v1/auth/login."
+      },
+      "LoginResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether authentication succeeded."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable status message."
+          },
+          "session_active": {
+            "type": "boolean",
+            "title": "Session Active",
+            "description": "Whether a usable session is now established."
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "session_active"
+        ],
+        "title": "LoginResponse",
+        "description": "Response for POST /api/v1/auth/login."
+      },
+      "Meter": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id",
+            "description": "Unique meter identifier."
+          },
+          "serial_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serial Number",
+            "description": "Hardware serial number, if available."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Operational status, e.g. ACTIVE, INACTIVE, FAULT.",
+            "default": "UNKNOWN"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Install location / site name, if available."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id"
+        ],
+        "title": "Meter",
+        "description": "A smart meter summary as returned by the meters listing."
+      },
+      "MeterDetail": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id",
+            "description": "Unique meter identifier."
+          },
+          "serial_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serial Number",
+            "description": "Hardware serial number, if available."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Operational status, e.g. ACTIVE, INACTIVE, FAULT.",
+            "default": "UNKNOWN"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Install location / site name, if available."
+          },
+          "install_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Install Date",
+            "description": "Meter installation timestamp, if available."
+          },
+          "last_reading": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Reading",
+            "description": "Most recent meter reading value (kWh), if available."
+          },
+          "last_reading_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Reading At",
+            "description": "Timestamp of the most recent reading, if available."
+          },
+          "firmware_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firmware Version",
+            "description": "Meter firmware version, if available."
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer",
+            "description": "Associated customer / account name, if available."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id"
+        ],
+        "title": "MeterDetail",
+        "description": "Extended meter information returned for a single meter."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
